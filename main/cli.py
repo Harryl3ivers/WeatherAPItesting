@@ -34,7 +34,7 @@ class WeatherCLI:
             city = validator.valid_city(city)
             units = input("Enter units (metric/imperial): ").strip()
             units = validator.valid_units(units)
-            weather = self.client.get_current_weather(city=city)
+            weather = self.client.get_current_weather(city=city, units=units)
             print(f"Current weather in {city} {units}:")
             print(weather)
         except Exception as e:
@@ -47,7 +47,7 @@ class WeatherCLI:
         units = validator.valid_units(units)
         try:
             lattude, longitude = validator.valid_coordinates(lattude, longitude)
-            weather_cords = self.client.get_weather_by_coordinates(lat=lattude, lon=longitude)
+            weather_cords = self.client.get_weather_by_coordinates(lat=lattude, lon=longitude, units=units)
             print(f"Current weather at coordinates ({lattude}, {longitude}) ({units}):")
             print(weather_cords)
         except Exception as e:

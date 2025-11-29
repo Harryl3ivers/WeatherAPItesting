@@ -12,7 +12,7 @@ class WeatherClient:
             raise ValueError("Api key not found. Set the Weather api key in the .env file.")
     
     def get_current_weather(self, city="London",units="metric"):
-        url = f"{self.BaseUrl}?q=city&appid={self.api_key}&units=metric"
+        url =  self.BaseUrl
         params = {
             "q": city,
             "appid": self.api_key,
