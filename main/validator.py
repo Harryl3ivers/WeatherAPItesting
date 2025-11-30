@@ -2,7 +2,7 @@ import re
 class validator:
     @staticmethod
     def valid_city(city):
-        if not city:
+        if not city.strip():
             raise ValueError("City name cannot be empty.")
         if not re.match("^[a-zA-Z\s-]+$", city):
             raise ValueError("City name contains invalid characters.")
