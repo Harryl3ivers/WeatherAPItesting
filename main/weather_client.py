@@ -9,7 +9,7 @@ class WeatherClient:
         load_dotenv()
         self.api_key = os.getenv("WEATHER_API_KEY")
         if not self.api_key:
-            raise ValueError("Api key not found. Set the Weather api key in the .env file.")
+            raise KeyError("Api key not found. Set the Weather api key in the .env file.")
     
     def get_current_weather(self, city="London",units="metric"):
         url =  self.BaseUrl
