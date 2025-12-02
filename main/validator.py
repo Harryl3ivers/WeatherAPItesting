@@ -1,10 +1,23 @@
 import re
 class validator:
+    city_abbrviations = {
+        "NYC": "New York",
+        "LA": "Los Angeles",
+        "SF": "San Francisco",
+        "DC": "Washington",
+        "UK": "United Kingdom",
+        "RUS": "Russia"
+    }
+
     @staticmethod
     def valid_city(city):
+        city = city.strip()
         if not city.strip():
             raise ValueError("City name cannot be empty.")
-        if not re.match("^[a-zA-Z\s-]+$", city):
+        upper_city = city.upper()
+        if upper_city in validator.city_abbrviations:
+            city = validator.city_abbrviations[upper_city]
+        if not re.match(r"^[a-zA-Z\s-]+$", city):
             raise ValueError("City name contains invalid characters.")
         return city
     
