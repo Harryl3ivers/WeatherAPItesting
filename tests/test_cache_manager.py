@@ -1,7 +1,9 @@
 import pytest 
 import time 
 from main.cache_manager import CacheManager
-# import freezegun
+from freezegun import freeze_time
+
+
 
 class TestCacheManager:
     def test_cache_initialization(self):
@@ -10,3 +12,66 @@ class TestCacheManager:
         assert cache.expiration_time == 300
         assert cache.hits == 0
         assert cache.misses == 0
+    
+    def test_set_and_get(self):
+        """Test basic set and get operations"""
+        cache = CacheManager()
+        cache.set("key1", "value1")
+        
+        result = cache.get("key1")
+        assert result == "value1"
+
+    def test_get_nonexistent_key(self):
+        cache = CacheManager()
+        result = cache.get("nonexistent")
+        assert result is None
+        assert cache.misses == 1
+    
+    def test_cache_stores_different_types(self):
+        cache = cache = CacheManager()
+        cache.set("int", 42)
+        cache.set("list", [1, 2, 3])
+        cache.set("dict", {"a": 1})
+        assert cache.get("int") == 42
+        assert cache.get("list") == [1, 2, 3]
+        assert cache.get("dict") == {"a": 1}
+
+
+    @freeze_time("2025-04-12 10:00:00")
+    def test_expiration(self):
+        cache = CacheManager()
+        cache.set("temp_key", "temp_value")
+        # Move time forward by 301 seconds to expire the cache
+        with freeze_time("2025-04-12 10:05:01"):
+            result = cache.get("temp_key")
+            assert result is None
+            assert cache.misses == 1
+    
+    def test_overwrite_cache(self):
+        cache = CacheManager()
+        cache.set("key", "value1")
+        cache.set("key", "value2")
+        assert cache.get("key") == "value2"
+    
+    def test_delete_key(self):
+        cache = CacheManager()
+        cache.set("key", "value")
+        cache.delete("key")
+        assert cache.get("key") is None
+    
+    def test_delete_nonexistent_key(self):
+        cache = CacheManager()
+        # Should not raise an error
+        cache.delete("nonexistent")
+    
+    def test_clear_cache(self):
+        cache = CacheManager()
+        cache.set("key1", "value1")
+        cache.set("key2", "value2")
+        cache.clear()
+        assert cache.get("key1") is None
+        assert cache.get("key2") is None
+
+
+
+        
