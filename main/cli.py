@@ -1,9 +1,12 @@
 from weather_client import WeatherClient
+from cache_manager import CacheManager
+import logging
 import sys
 from validator import validator
 class WeatherCLI:
     def __init__(self):
         self.client = WeatherClient()
+        self.cache = CacheManager(self.expiration_time)
 
     def main(self):
         print("Welcome to the Weather CLI!")
@@ -13,7 +16,8 @@ class WeatherCLI:
             print("\nOptions:")
             print("1. Get current weather by city name")
             print("2. Get current weather by coordinates")
-            print("3. Exit")
+            print("3. View cache statistics")
+            print("4. Exit")
         
             choice = input("Enter your choice (1-3): ").strip()
 
@@ -22,6 +26,8 @@ class WeatherCLI:
             elif choice == "2":
                 self.get_current_coordinates()
             elif choice == "3":
+                self.display_cache_stats()
+            elif choice == "4":
                 print("Exiting the Weather CLI. Goodbye!")
                 sys.exit(0)
             else:
@@ -34,7 +40,21 @@ class WeatherCLI:
             city = validator.valid_city(city)
             units = input("Enter units (metric/imperial): ").strip()
             units = validator.valid_units(units)
+
+            cache_key = f"city:{city}:units:{units}"
+            cached_weather = self.cache.get(cache_key)
+           
+            if cached_weather:
+                logging.info("Fetching weather data from cache.")
+                self._display_weather(cached_weather)
+                return
             weather = self.client.get_current_weather(city=city, units=units)
+            parsed = self.client.weather_data(weather)
+
+            #store in cache
+            self.cache.set(cache_key, parsed)
+            self._display_weather(parsed)
+
             print(f"Current weather in {city} {units}:")
             print(weather)
         except Exception as e:
@@ -52,6 +72,13 @@ class WeatherCLI:
             print(weather_cords)
         except Exception as e:
             print(f"Error fetching weather data: {e}")
+    
+    def display_cache_stats(self):
+        stats = self.cache.get_stats()
+        print("\nCache Statistics:")
+        print(f"  Hits: {stats['hits']}")
+        print(f"  Misses: {stats['misses']}")
+        print(f"  Current Size: {stats['size']} items")
 
     def _display_weather(self, weather):
         """Pretty print weather data"""
