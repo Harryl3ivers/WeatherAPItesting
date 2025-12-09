@@ -48,3 +48,47 @@ class TestRateLimiter:
         with freeze_time("2025-01-01 00:32:00"):
             limiter.refill_tokens()
             assert limiter.tokens == 5
+    
+    def test_get_status(self):
+        limiter = RateLimiter(max_requests=60, period_seconds=60)
+        limiter.allow_request()
+        limiter.allow_request()
+        status = limiter.get_status()
+        assert status["max_requests"] == 60
+        assert status["period_seconds"] == 60
+        assert status["available_tokens"] == 58
+        assert "last_refill" in status
+
+    def test_reset(self):
+        limiter = RateLimiter(max_requests=10, period_seconds=60)
+        limiter.allow_request()
+        limiter.allow_request()
+        assert limiter.tokens == 8
+        limiter.reset()
+        assert limiter.tokens == 10
+    
+    @freeze_time("2025-01-01 00:00:00")
+    def test_gradual_refill(self):
+        limiter = RateLimiter(max_requests=60, period_seconds=60)
+        for _ in range(60):
+            limiter.allow_request()
+        with freeze_time("2025-01-01 00:00:10"):
+            limiter.refill_tokens()
+            assert limiter.tokens == 10
+        with freeze_time("2025-01-01 00:00:30"):
+            limiter.refill_tokens()
+            assert limiter.tokens == 30
+    
+    # def test_burst_requests(self):
+    #  with freeze_time("2025-01-01 00:00:00") as frozen:
+    #     limiter = RateLimiter(max_requests=5, period_seconds=60)
+
+    #     for _ in range(5):
+    #         assert limiter.allow_request() is True
+
+    #     assert limiter.allow_request() is False
+
+    #     # Move time forward 2 seconds
+    #     frozen.tick(2)
+
+    #     assert limiter.allow_request() is True
