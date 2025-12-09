@@ -1,5 +1,6 @@
 from weather_client import WeatherClient
 from cache_manager import CacheManager
+from rate_limiter import RateLimiter
 import logging
 import sys
 from validator import validator
@@ -7,6 +8,7 @@ class WeatherCLI:
     def __init__(self):
         self.client = WeatherClient()
         self.cache = CacheManager(self.expiration_time)
+        self.rate_limiter = RateLimiter(max_requests=60, period_seconds=60)
 
     def main(self):
         print("Welcome to the Weather CLI!")
@@ -47,6 +49,12 @@ class WeatherCLI:
             if cached_weather:
                 logging.info("Fetching weather data from cache.")
                 self._display_weather(cached_weather)
+                return
+            
+            if not self.rate_limiter.allow_request():
+                print("Rate limit exceeded. Please try again later.")
+                status = self.rate_limiter.get_status()
+                logging.info(f"Rate Limiter Status: {status}")
                 return
             weather = self.client.get_current_weather(city=city, units=units)
             parsed = self.client.weather_data(weather)
