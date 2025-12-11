@@ -6,9 +6,10 @@ import sys
 from validator import validator
 class WeatherCLI:
     def __init__(self):
+        self.cache = CacheManager()  # Cache expiration time in seconds
         self.client = WeatherClient()
-        self.cache = CacheManager(self.expiration_time)
         self.rate_limiter = RateLimiter(max_requests=60, period_seconds=60)
+         
 
     def main(self):
         print("Welcome to the Weather CLI!")
