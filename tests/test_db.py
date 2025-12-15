@@ -82,3 +82,22 @@ class TestWeatherDB:
         assert len(rows) == 2
         assert rows[0][1] == ('London')
         assert rows[1][1] == ('Paris')
+    
+    def test_get_city_history(self,db_path):
+        weather = {
+            'city': 'Paris',
+            'country': 'FR',
+            'temperature': 18.0,
+            'feels_like': 17.5,
+            'humidity': 65,
+            'wind_speed': 2.1,
+            "condition":"sunny",
+            'description': 'sunny'
+        }
+        save_weather_data(db_path,weather)
+        history = fetch_weather_history("Paris",db_path)
+        assert len(history) ==1
+        assert history[0]["city"] == "Paris"
+    
+    def test_get_city_history_case_insensitive(self, db_path):
+        pass
