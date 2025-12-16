@@ -35,24 +35,24 @@ def save_weather_data(db_path: str = "weather.db", weather: Optional[Dict[str, A
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO weather_history 
-            (id, city, country, temperature, feels_like, humidity, wind_speed, condition, description, timestamp, recorded_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (city, country, temperature, feels_like, humidity, wind_speed, condition, description, timestamp, recorded_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-            weather.get("id"),
-            weather.get("city"),
-            weather.get("country"),
-            weather.get("temperature"),
-            weather.get("feels_like"),
-            weather.get("humidity"),
-            weather.get("wind_speed"),
-            weather.get("condition"),
-            weather.get("description"),
+            weather.get("city", "Unknown"),
+            weather.get("country", "XX"),
+            weather.get("temperature", 0.0),
+            weather.get("feels_like", weather.get("temperature", 0.0)),
+            weather.get("humidity", 0),
+            weather.get("wind_speed", 0.0),
+            weather.get("condition", "unknown"),
+            weather.get("description", "unknown"),
             weather.get("timestamp"),
-            datetime.now()  # recorded_at
+            datetime.now()
         ))
-        conn.commit()   
+        conn.commit()
     finally:
         conn.close()
+
 def fetch_weather_history(
     city: str,
     *,
@@ -97,25 +97,26 @@ def fetch_weather_history(
     finally:
         conn.close()
 
-def temperature_statistics(city: str, db_path: str = "weather.db") -> Dict[str, Any]:
-    conn = sqlite3.connect("weather.db")
+def temperature_statistics(city: str, db_path: str = "weather.db"):
+    conn = sqlite3.connect(db_path)
     try:
         cursor = conn.cursor()
-        cursor.execute(""" 
-                       SELECT
-                       AVG(temperature) AS avg_temp,
-                       MIN(temperature) AS min_temp,
-                        MAX(temperature) AS max_temp
-                       COUNT(*) AS record_count
-                       FROM weather_history
-                       WHERE LOWER(city) = LOWER(?)
-                       """, (city,))
+        cursor.execute("""
+            SELECT
+                AVG(temperature),
+                MIN(temperature),
+                MAX(temperature),
+                COUNT(*)
+            FROM weather_history
+            WHERE LOWER(city) = LOWER(?)
+        """, (city,))
         row = cursor.fetchone()
+
         if row and row[3] > 0:
             return {
-                "average_temperature": row[0],
-                "minimum_temperature": row[1],
-                "maximum_temperature": row[2],
+                "avg_temp": row[0],
+                "min_temp": row[1],
+                "max_temp": row[2],
                 "record_count": row[3]
             }
         return None

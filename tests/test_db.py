@@ -1,6 +1,6 @@
 import pytest
 import sqlite3
-from main.db import initialise_db, save_weather_data, fetch_weather_history
+from main.db import initialise_db, save_weather_data, fetch_weather_history, temperature_statistics
 from datetime import datetime, timedelta
 import os
 
@@ -150,3 +150,28 @@ class TestWeatherDB:
             db_path=db_path
         )
         assert len(history) == 0
+    
+    def test_get_temperature_stats(self,db_path):
+        for temp in [10.0,15.0,20.0,25.0,30.0]:
+            weather = {
+             'city': 'London',
+            'country': 'GB',
+            'temperature': temp,
+            'feels_like': temp,
+            'humidity': 72,
+            'wind_speed': 3.5,
+            'condition': 'cloudy',
+            'description': 'cloudy'
+            }
+            save_weather_data(db_path,weather)
+        stats = temperature_statistics("London",db_path)
+        assert stats is not None
+        assert stats["avg_temp"] == 20
+        assert stats["min_temp"] == 10
+        assert stats["max_temp"] == 30
+        assert stats["record_count"] == 5
+    
+    def test_get_temperature_stats_no_data(self, db_path):
+        stats = temperature_statistics("NonexistentTemp",db_path)
+        assert stats is None
+    

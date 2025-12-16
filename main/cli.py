@@ -1,6 +1,7 @@
 from weather_client import WeatherClient
 from cache_manager import CacheManager
 from rate_limiter import RateLimiter
+from db import initialise_db, save_weather_data, fetch_weather_history, temperature_statistics
 import logging
 import sys
 from validator import validator
@@ -9,6 +10,7 @@ class WeatherCLI:
         self.cache = CacheManager()  # Cache expiration time in seconds
         self.client = WeatherClient()
         self.rate_limiter = RateLimiter(max_requests=60, period_seconds=60)
+        initialise_db()
          
 
     def main(self):
@@ -20,9 +22,11 @@ class WeatherCLI:
             print("1. Get current weather by city name")
             print("2. Get current weather by coordinates")
             print("3. View cache statistics")
-            print("4. Exit")
+            print("4. View weather history for a city")
+            print("5. View temperature stats for a city")
+            print("6. Exit")
         
-            choice = input("Enter your choice (1-3): ").strip()
+            choice = input("Enter your choice (1-6): ").strip()
 
             if choice == "1":
              self.get_current_city()
@@ -31,6 +35,10 @@ class WeatherCLI:
             elif choice == "3":
                 self.display_cache_stats()
             elif choice == "4":
+                self.fetch_weather_history()
+            elif choice == 5:
+                self.temperature_statistics()
+            elif choice == 6:
                 print("Exiting the Weather CLI. Goodbye!")
                 sys.exit(0)
             else:
