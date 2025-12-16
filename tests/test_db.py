@@ -83,7 +83,24 @@ class TestWeatherDB:
         assert rows[0][1] == ('London')
         assert rows[1][1] == ('Paris')
     
-    def test_get_city_history(self,db_path):
+    def test_get_city_history(self, db_path):
+        weather = {
+            'city': 'London',
+            'country': 'GB',
+            'temperature': 15.5,
+            'feels_like': 14.3,
+            'humidity': 72,
+            'wind_speed': 3.5,
+            'condition': 'cloudy',
+            'description': 'cloudy'
+        }
+
+        save_weather_data(db_path, weather)
+
+        history = fetch_weather_history("London", db_path=db_path)
+        assert len(history) == 1
+    
+    def test_get_city_history_case_insensitive(self, db_path):
         weather = {
             'city': 'Paris',
             'country': 'FR',
@@ -91,13 +108,45 @@ class TestWeatherDB:
             'feels_like': 17.5,
             'humidity': 65,
             'wind_speed': 2.1,
-            "condition":"sunny",
+            'condition': 'sunny',
             'description': 'sunny'
         }
-        save_weather_data(db_path,weather)
-        history = fetch_weather_history("Paris",db_path)
-        assert len(history) ==1
-        assert history[0]["city"] == "Paris"
+
+        save_weather_data(db_path, weather)
+
+        history = fetch_weather_history("Paris", db_path=db_path)
+        assert len(history) == 1
+
+        history = fetch_weather_history("PARIS", db_path=db_path)
+        assert len(history) == 1
     
-    def test_get_city_history_case_insensitive(self, db_path):
-        pass
+    def test_get_city_history_with_limit(self, db_path):
+        weather = {
+            'city': 'London',
+            'country': 'GB',
+            'temperature': 15.5,
+            'feels_like': 14.3,
+            'humidity': 72,
+            'wind_speed': 3.5,
+            'condition': 'cloudy',
+            'description': 'cloudy'
+        }
+
+        # Save 5 records
+        for _ in range(5):
+            save_weather_data(db_path, weather)
+
+        history = fetch_weather_history(
+            "London",
+            db_path=db_path,
+            limit=3
+        )
+
+        assert len(history) == 3
+    
+    def test_get_city_history_empty(self, db_path):
+        history = fetch_weather_history(
+            "NonExistentCity",
+            db_path=db_path
+        )
+        assert len(history) == 0

@@ -53,32 +53,47 @@ def save_weather_data(db_path: str = "weather.db", weather: Optional[Dict[str, A
         conn.commit()   
     finally:
         conn.close()
-def fetch_weather_history(city: str,db_path: str = "weather.db", limit: int = 10) -> List[Dict[str, Any]]:
+def fetch_weather_history(
+    city: str,
+    *,
+    db_path: str = "weather.db",
+    limit: int = 10
+):
+    """
+    city: str → positional
+    db_path: str → keyword-only
+    limit: int → keyword-only
+    """
+    initialise_db(db_path)
+
     conn = sqlite3.connect(db_path)
     try:
         cursor = conn.cursor()
-        cursor.execute("""SELECT id, city, country, temperature, feels_like, humidity, wind_speed, condition, description, timestamp, recorded_at
-                          FROM weather_history 
-                       WHERE LOWER(city) = LOWER(?)
-                       ORDER BY timestamp DESC
-                          LIMIT ?""", (city, limit))
+        cursor.execute("""
+            SELECT id, city, country, temperature, feels_like, humidity,
+                   wind_speed, condition, description, timestamp, recorded_at
+            FROM weather_history
+            WHERE LOWER(city) = LOWER(?)
+            ORDER BY id DESC
+            LIMIT ?
+        """, (city, limit))
         rows = cursor.fetchall()
-        history = []
-        for row in rows:
-            history.append({
-                "id": row[0],
-                "city": row[1],
-                "country": row[2],
-                "temperature": row[3],
-                "feels_like": row[4],
-                "humidity": row[5],
-                "wind_speed": row[6],
-                "condition": row[7],
-                "description": row[8],
-                "timestamp": row[9],
-                "recorded_at": row[10]
-            })
-        return history
+        return [
+            {
+                "id": r[0],
+                "city": r[1],
+                "country": r[2],
+                "temperature": r[3],
+                "feels_like": r[4],
+                "humidity": r[5],
+                "wind_speed": r[6],
+                "condition": r[7],
+                "description": r[8],
+                "timestamp": r[9],
+                "recorded_at": r[10],
+            }
+            for r in rows
+        ]
     finally:
         conn.close()
 
