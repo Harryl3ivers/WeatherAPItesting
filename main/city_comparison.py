@@ -40,6 +40,13 @@ class MultiCityComparison:
         if not valid:
             raise ValueError("No valid weather data found")
         return max(valid,key=lambda city:city["temperature"])
+    
+    def get_coldest_city(self,cities,units):
+        results = self.compare_cities(cities,units)
+        valid = [city for city in results if "error" not in city]
+        if not valid:
+            raise ValueError("No valid weather data found")
+        return min(valid,key=lambda city:city["temperature"])
 
 
                   
