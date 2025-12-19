@@ -76,7 +76,7 @@ class WeatherCLI:
             parsed_weather = self.client.weather_data(raw_weather)
 
             self.cache.set(cache_key, parsed_weather)
-            save_weather_data(parsed_weather)
+            save_weather_data(weather=parsed_weather)
 
             self._display_weather(parsed_weather)
 

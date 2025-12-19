@@ -12,7 +12,35 @@ class MultiCityComparison:
         self.rate_limiter = RateLimiter(max_requests=60,period_seconds=60)
     
     def compare_cities(self,cities,units):
+        if not cities:
+            raise ValueError("City list cannot be empty")
+        if len(cities) > 10:
+            raise ValueError("Maximum allowed cities is 10")
         units = self.validator.valid_units(units)
-        validated_city = []
+        results = []
         for city in cities:
             try:
+                validated_city = self.validator.valid_city(city) #Clean and validate the city name.
+                cache_key = f"{validated_city} : {units}"
+                cached = self.cache.get(cache_key)
+                if cached:
+                     results.append(cached)
+                     continue
+                weather = self.client.get_current_weather(validated_city,units)
+                parsed = self.client.weather_data(weather)
+                self.cache.set(cache_key,parsed)
+                results.append(parsed)
+            except Exception as e:
+                raise ValueError
+            return results
+    
+    def get_hottest_cities(self,cities,units):
+        results = self.compare_cities(cities,units)
+        valid = [city for city in results if "error" not in city]
+        if not valid:
+            raise ValueError("No valid weather data found")
+        return max(valid,key=lambda city:city["temperature"])
+
+
+                  
+                
