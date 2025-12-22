@@ -5,7 +5,7 @@ from main.rate_limiter import RateLimiter
 
 
 class MultiCityComparison:
-    def __init__(self,db_path = "weather.db"):
+    def __init__(self):
         self.client = WeatherClient()
         self.validator = validator()
         self.cache = CacheManager(ttl_seconds = 300)
@@ -47,6 +47,15 @@ class MultiCityComparison:
         if not valid:
             raise ValueError("No valid weather data found")
         return min(valid,key=lambda city:city["temperature"])
+    
+    def get_average_temperature(self,cities,units):
+        results = self.compare_cities(cities,units)
+        valid = [city for city in results if "error" not in city]
+        if not valid:
+            raise ValueError("No valid weather data found")
+        temperatures =[city["temperature"]for city in valid]
+        return sum(temperatures)/len(temperatures)  # Calculate average: sum all temps ÷ count
+        # (15 + 20 + 25) / 3 = 20
 
 
                   
