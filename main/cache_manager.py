@@ -1,7 +1,8 @@
 import time 
 
 class CacheManager:
-    def __init__(self):
+    def __init__(self,ttl_seconds=300):
+        self.ttl_seconds = ttl_seconds
         self.cache = {} #create an empty dictionary to store cache items
         self.expiration_time = 300  # Cache expiration time in seconds (5 minutes)
         self.hits = 0 #number of cache hits - items found in cache

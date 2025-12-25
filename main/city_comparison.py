@@ -30,9 +30,9 @@ class MultiCityComparison:
                 parsed = self.client.weather_data(weather)
                 self.cache.set(cache_key,parsed)
                 results.append(parsed)
-            except Exception as e:
+            except Exception:
                 raise ValueError
-            return results
+        return results
     
     def get_hottest_cities(self,cities,units):
         results = self.compare_cities(cities,units)
