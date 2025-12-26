@@ -98,6 +98,34 @@ class TestMultiCityComparison:
         comparison = MultiCityComparison()
         coldest = comparison.get_coldest_city(["London","New York","Cairo"],"metric")
         assert coldest["city"] == "London"
+    
+    @patch("main.city_comparison.WeatherClient")
+    def test_get_average_temperature(self,mock_get):
+        mock_client = MagicMock()
+        mock_client.get_current_weather.return_value = {}
+        mock_client.weather_data.side_effect = [
+            {
+            "city": "London",
+            "temperature": 15.0,
+            "country": "GB"
+        },
+        {
+            "city": "New York",
+            "temperature": 20.0,
+            "country": "US"
+        },
+        {
+            "city": "Cairo",
+            "temperature": 25.0,
+            "country": "EG"
+        }
+        ]
+        mock_get.return_value = mock_client
+        comaparison = MultiCityComparison()
+        average = comaparison.get_average_temperature(["London","New York","Cairo"],"metric")
+        assert average == 20.0
+    
+
          
 
 
